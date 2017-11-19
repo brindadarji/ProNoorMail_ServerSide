@@ -1,0 +1,119 @@
+Copy In Manifest (main activity)
+
+   <activity
+            android:name="com.example.notification.MainActivity"
+            android:label="@string/app_name"
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+<!--------------------------------------------->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+
+            <!--
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+
+            -->
+<!----------------------------------------------------->
+        </activity>
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+In ur Main Activity
+		
+		Intent i = null;
+		Intent in = getIntent();
+		String action = in.getAction(); 
+		String type = in.getType();
+		if(in.getExtras() != null)
+		{
+			
+			     if (Intent.ACTION_SEND.equals(action) && type != null) 
+			    {
+//					Toast.makeText(getApplicationContext(), type, 1).show();
+					i = new Intent(MainActivity.this, ContactListActivity.class);  // ur (Mail) activity in which u have to take this path
+		        	
+					Uri fileUri = (Uri) in.getParcelableExtra(Intent.EXTRA_STREAM);
+//					Toast.makeText(getApplicationContext(), ""+fileUri, 1).show();
+		     	   		 
+					i.putExtra("share", "share_message");
+
+		     	   	
+			        if (type.equals("text/plain"))				   // Handle text being sent 
+			        {
+			            String sharedText = in.getStringExtra(Intent.EXTRA_TEXT);
+			       	    if (sharedText != null) 
+			       	    {
+			       	    	i.putExtra("message", sharedText);
+			       	    }
+			       	    else
+			       	    {
+			       	    	if (fileUri != null && new File(fileUri.getPath()).exists()) 
+				     	{
+						i.putExtra("message", fileUri.getPath());
+					}
+				    }
+			        }
+			   
+			        else if (type.startsWith("image/"))			   //Handle single image being sent(Same for video, audio else u can use */*)
+			        {
+			        	if (fileUri != null && new File(fileUri.getPath()).exists()) 
+			     	    	{
+			        		
+				     	    	i.putExtra("message", fileUri.getPath());
+					    
+			     	    	}
+			        	else
+			        	{
+			        		String[] projection = { MediaStore.Images.Media.DATA };
+			    			String picturePath = null;
+			    			try 
+			    			{
+			    				Cursor cursor = getContentResolver().query(fileUri, projection, null, null, null);
+			    				cursor.moveToFirst();
+			    				int columnIndex = cursor.getColumnIndex(projection[0]);
+			    				picturePath = cursor.getString(columnIndex);
+			    				cursor.close();
+			    				i.putExtra("message", picturePath);
+			    			} 
+			    			catch (Exception e) 
+			    			{
+			    				Log.e("Path Error", e.toString());
+			    			}
+			        	}
+			        }
+				startActivity(i);
+				finish();
+			}
+		}
+------------------------------------------------------------------------------------------------------------------------------------
+in ur mail activity
+
+Intent i = getIntent();
+if(i.getStringExtra("share") != null)
+{
+	String message = i.getStringExtra(message);
+	if(new File("message").exists)
+	{
+		// write the code to upload file
+	}
+	else
+	{
+		// write the code send text message
+	}
+}
